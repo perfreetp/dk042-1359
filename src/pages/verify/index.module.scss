@@ -1,0 +1,302 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 180rpx);
+}
+
+.searchSection {
+  background-color: $color-bg-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.searchTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.searchInput {
+  display: flex;
+  align-items: center;
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  border: 2rpx solid $color-border;
+  transition: all $transition-base;
+
+  &:focus-within {
+    border-color: $color-primary;
+    background-color: $color-bg-card;
+  }
+}
+
+.searchIcon {
+  font-size: $font-size-xl;
+  margin-right: $spacing-md;
+  color: $color-text-tertiary;
+}
+
+.input {
+  flex: 1;
+  font-size: $font-size-lg;
+  color: $color-text-primary;
+  background: transparent;
+  min-height: 60rpx;
+}
+
+.clearBtn {
+  padding: $spacing-xs;
+  color: $color-text-tertiary;
+  font-size: $font-size-lg;
+}
+
+.quickInput {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.quickTag {
+  padding: $spacing-xs $spacing-md;
+  background-color: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    background-color: $color-bg-info;
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+}
+
+.btnSecondary {
+  background-color: $color-bg-card;
+  border: 2rpx solid $color-primary;
+  color: $color-primary;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  background-color: $color-text-disabled;
+  border-color: $color-text-disabled;
+  color: $color-text-white;
+}
+
+.resultSection {
+  padding: 0 $spacing-lg;
+}
+
+.loadingSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xxl * 2;
+}
+
+.loadingIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.loadingText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.errorSection {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-xl;
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.errorIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  color: $color-status-danger;
+}
+
+.errorText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-lg;
+}
+
+.errorAction {
+  @include button-reset;
+  height: $button-height-md;
+  padding: 0 $spacing-xl;
+  border-radius: $radius-button;
+  background-color: $color-bg-danger;
+  color: $color-status-danger;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.confirmSection {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: $color-bg-card;
+  padding: $spacing-lg;
+  padding-bottom: calc(env(safe-area-inset-bottom) + $spacing-lg);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.checkbox {
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid $color-border;
+  border-radius: $radius-xs;
+  margin-right: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+  flex-shrink: 0;
+
+  &.checked {
+    background-color: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+.checkIcon {
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+}
+
+.checkboxLabel {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  line-height: 1.5;
+
+  .highlight {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.confirmBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    background-color: $color-text-disabled;
+  }
+}
+
+.confirmBtnEnabled {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+}
+
+.emptySection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xxl * 2;
+}
+
+.emptyIcon {
+  font-size: 100rpx;
+  margin-bottom: $spacing-lg;
+  opacity: 0.3;
+}
+
+.emptyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.tipSection {
+  background-color: $color-bg-info;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin: 0 $spacing-lg $spacing-md;
+  border-left: 6rpx solid $color-primary;
+}
+
+.tipTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.tipText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}

@@ -1,0 +1,46 @@
+// ============================================
+// 主题配色变量（航空维修小程序）
+// ============================================
+
+// 品牌主题色：航空蓝，专业可信
+$color-primary: #165dff;
+$color-primary-light: #4080ff;
+$color-primary-dark: #0e42d2;
+
+// 业务状态色（高辨识度，机坪场景）
+$color-status-pass: #00b42a;
+$color-status-warning: #ff7d00;
+$color-status-danger: #f53f3f;
+$color-status-info: #165dff;
+
+// 功能色
+$color-success: #00b42a;
+$color-warning: #ff7d00;
+$color-error: #f53f3f;
+$color-info: #165dff;
+
+// 状态背景色（浅色背景）
+$color-bg-pass: rgba(0, 180, 42, 0.1);
+$color-bg-warning: rgba(255, 125, 0, 0.1);
+$color-bg-danger: rgba(245, 63, 63, 0.1);
+$color-bg-info: rgba(22, 93, 255, 0.1);
+
+// 背景色
+$color-bg-page: #f5f6f7;
+$color-bg-card: #ffffff;
+$color-bg-hover: #f2f3f5;
+
+// 文本色
+$color-text-primary: #1d2129;
+$color-text-secondary: #4e5969;
+$color-text-tertiary: #86909c;
+$color-text-disabled: #c9cdd4;
+$color-text-white: #ffffff;
+
+// 边框色
+$color-border: #e5e6eb;
+$color-divider: #f2f3f5;
+
+// 大数字颜色
+$color-number-primary: #1d2129;
+$color-number-highlight: #165dff;

@@ -1,0 +1,130 @@
+@use '@/styles/variables.scss' as *;
+
+.statusCard {
+  position: relative;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 8rpx solid $color-status-pass;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &.status-pass {
+    border-left-color: $color-status-pass;
+    background: linear-gradient(135deg, $color-bg-pass 0%, $color-bg-card 60%);
+  }
+
+  &.status-warning {
+    border-left-color: $color-status-warning;
+    background: linear-gradient(135deg, $color-bg-warning 0%, $color-bg-card 60%);
+  }
+
+  &.status-danger {
+    border-left-color: $color-status-danger;
+    background: linear-gradient(135deg, $color-bg-danger 0%, $color-bg-card 60%);
+  }
+
+  &.status-info {
+    border-left-color: $color-status-info;
+    background: linear-gradient(135deg, $color-bg-info 0%, $color-bg-card 60%);
+  }
+}
+
+.statusBadge {
+  position: absolute;
+  top: $spacing-lg;
+  right: $spacing-lg;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-xs;
+}
+
+.statusText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.partInfo {
+  margin-bottom: $spacing-md;
+  padding-right: 160rpx;
+}
+
+.partName {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  @include text-ellipsis;
+}
+
+.serialNumber {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.lifeBadge {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  background-color: $color-bg-info;
+  border-radius: $radius-xs;
+  margin-bottom: $spacing-lg;
+}
+
+.lifeText {
+  font-size: $font-size-xs;
+  color: $color-info;
+  font-weight: $font-weight-medium;
+}
+
+.remainingContainer {
+  display: flex;
+  align-items: center;
+  background-color: $color-bg-page;
+  border-radius: $radius-sm;
+  padding: $spacing-md;
+}
+
+.remainingItem {
+  flex: 1;
+  text-align: center;
+}
+
+.remainingLabel {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.remainingValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-number-primary;
+
+  &.warning {
+    color: $color-status-warning;
+  }
+
+  &.danger {
+    color: $color-status-danger;
+  }
+}
+
+.unit {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-tertiary;
+}
+
+.divider {
+  width: 2rpx;
+  height: 80rpx;
+  background-color: $color-border;
+  margin: 0 $spacing-md;
+}

@@ -1,0 +1,123 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  padding: 0;
+}
+
+.section {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  text-align: right;
+  @include text-ellipsis;
+  max-width: 60%;
+}
+
+.matchRow {
+  padding-left: $spacing-md;
+  border-left: 4rpx solid $color-border;
+  margin-left: -$spacing-md;
+  padding-right: $spacing-md;
+  margin-right: -$spacing-md;
+
+  &.match {
+    border-left-color: $color-status-pass;
+    background-color: $color-bg-pass;
+  }
+
+  &.mismatch {
+    border-left-color: $color-status-danger;
+    background-color: $color-bg-danger;
+  }
+}
+
+.matchValue {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.matchIcon {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  .match & {
+    color: $color-status-pass;
+  }
+
+  .mismatch & {
+    color: $color-status-danger;
+  }
+}
+
+.warningSection {
+  background-color: $color-bg-warning;
+  border: 2rpx solid rgba(255, 125, 0, 0.3);
+}
+
+.warningTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-status-warning;
+  margin-bottom: $spacing-sm;
+}
+
+.warningText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+}
+
+.dangerSection {
+  background-color: $color-bg-danger;
+  border: 2rpx solid rgba(245, 63, 63, 0.3);
+}
+
+.dangerTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-status-danger;
+  margin-bottom: $spacing-sm;
+}
+
+.dangerText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+}

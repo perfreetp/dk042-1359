@@ -1,0 +1,278 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: $spacing-xxl $spacing-lg;
+  color: $color-text-white;
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-round;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin-right: $spacing-lg;
+  overflow: hidden;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+}
+
+.userInfo {
+  flex: 1;
+}
+
+.userName {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-xs;
+}
+
+.userDept {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  margin-bottom: $spacing-xs;
+}
+
+.userRole {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: $spacing-xl;
+  padding-top: $spacing-lg;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  display: block;
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  opacity: 0.8;
+}
+
+.content {
+  padding: $spacing-lg;
+  margin-top: -$spacing-lg;
+}
+
+.section {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  padding: $spacing-lg $spacing-lg $spacing-md;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background-color: $color-bg-hover;
+  }
+}
+
+.itemIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.itemDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.itemArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+  margin-left: $spacing-md;
+  flex-shrink: 0;
+}
+
+.itemBadge {
+  padding: $spacing-xs $spacing-md;
+  background-color: $color-status-danger;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  margin-right: $spacing-sm;
+}
+
+.historySection {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.filterBar {
+  display: flex;
+  padding: $spacing-md $spacing-lg;
+  gap: $spacing-sm;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.filterItem {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-button;
+  background-color: $color-bg-page;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.historyItem {
+  display: flex;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background-color: $color-bg-hover;
+  }
+}
+
+.historyStatus {
+  width: 8rpx;
+  border-radius: $radius-xs;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.historyContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.historyPart {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  flex: 1;
+  margin-right: $spacing-md;
+}
+
+.historyBadge {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-text-white;
+  flex-shrink: 0;
+}
+
+.historyMeta {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.historyTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.emptyState {
+  padding: $spacing-xxl $spacing-lg;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.loading {
+  text-align: center;
+  padding: $spacing-xl;
+  color: $color-text-tertiary;
+}

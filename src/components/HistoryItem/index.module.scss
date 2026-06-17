@@ -1,0 +1,100 @@
+@use '@/styles/variables.scss' as *;
+
+.item {
+  display: flex;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.statusIndicator {
+  width: 8rpx;
+  border-radius: $radius-xs;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-xs;
+}
+
+.partName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  max-width: 420rpx;
+}
+
+.statusBadge {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-xs;
+  flex-shrink: 0;
+}
+
+.statusText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-text-white;
+}
+
+.serial {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.meta {
+  display: flex;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-sm;
+}
+
+.metaItem {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.metaLabel {
+  color: $color-text-tertiary;
+}
+
+.metaValue {
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.time {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.user {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
