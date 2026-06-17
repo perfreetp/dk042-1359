@@ -1,5 +1,7 @@
 export type VerifyStatus = 'pass' | 'warning' | 'danger' | 'info';
 
+export type ReportStatus = 'pending' | 'processing' | 'resolved';
+
 export interface PartInfo {
   id: string;
   serialNumber: string;
@@ -33,6 +35,8 @@ export interface VerifyRecord {
   verifyUser: string;
   aircraftNoInput: string;
   positionInput: string;
+  mismatchReason?: string;
+  todoId?: string;
 }
 
 export interface ReportItem {
@@ -47,8 +51,12 @@ export interface ReportItem {
   remark: string;
   reportTime: string;
   reportUser: string;
-  status: 'pending' | 'processing' | 'resolved';
+  status: ReportStatus;
   statusText: string;
+  processTime?: string;
+  resolveTime?: string;
+  processRemark?: string;
+  resolveRemark?: string;
 }
 
 export interface TodoVerify {
@@ -59,6 +67,8 @@ export interface TodoVerify {
   serialNumber: string;
   deadline: string;
   priority: 'high' | 'medium' | 'low';
+  completed: boolean;
+  completedAt?: string;
 }
 
 export interface UserInfo {

@@ -280,6 +280,77 @@
   line-height: 1.6;
 }
 
+.mismatchWarning {
+  background-color: $color-bg-warning;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  border-left: 8rpx solid $color-status-warning;
+}
+
+.mismatchTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-status-warning;
+  margin-bottom: $spacing-md;
+}
+
+.mismatchRow {
+  margin-bottom: $spacing-sm;
+  padding-left: $spacing-md;
+}
+
+.mismatchLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.mismatchDetail {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.mismatchActions {
+  margin-top: $spacing-md;
+  display: flex;
+  gap: $spacing-md;
+}
+
+.mismatchReportBtn {
+  @include button-reset;
+  height: $button-height-md;
+  padding: 0 $spacing-xl;
+  border-radius: $radius-button;
+  background-color: $color-status-warning;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.mismatchNote {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-status-warning;
+  margin-top: $spacing-sm;
+  line-height: 1.5;
+}
+
+.highlightDanger {
+  color: $color-status-danger !important;
+}
+
+.confirmBtnWarning {
+  background: linear-gradient(135deg, $color-status-warning 0%, #ff9a2e 100%) !important;
+  color: $color-text-white !important;
+}
+
 .tipSection {
   background-color: $color-bg-info;
   border-radius: $radius-md;

@@ -20,64 +20,48 @@ const filters: { value: FilterType; label: string }[] = [
 
 const MinePage: React.FC = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [historyList, setHistoryList] = useState<VerifyRecord[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const loadRecords = useVerifyStore(state => state.loadRecords);
 
-  const loadData = useCallback(async () => {
-    console.log('[MinePage] 加载个人数据');
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const user = getUserInfo();
-      setUserInfo(user);
-      loadRecords();
-      const state = useVerifyStore.getState();
-      setHistoryList(state.verifyRecords);
-    } catch (err) {
-      console.error('[MinePage] 加载失败:', err);
-      Taro.showToast({ title: '加载失败', icon: 'none' });
-    } finally {
-      setIsLoading(false);
-      Taro.stopPullDownRefresh();
-    }
-  }, [loadRecords]);
+  const verifyRecords = useVerifyStore(state => state.verifyRecords);
+  const initStore = useVerifyStore(state => state.initStore);
+
+  const loadData = useCallback(() => {
+    initStore();
+    const user = getUserInfo();
+    setUserInfo(user);
+  }, [initStore]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   useDidShow(() => {
-    console.log('[MinePage] 页面显示');
     loadData();
   });
 
   usePullDownRefresh(() => {
-    console.log('[MinePage] 下拉刷新');
     loadData();
+    Taro.stopPullDownRefresh();
   });
 
-  const filteredList = activeFilter === 'all' 
-    ? historyList 
-    : historyList.filter(r => r.status === activeFilter);
+  const filteredList = activeFilter === 'all'
+    ? verifyRecords
+    : verifyRecords.filter(r => r.status === activeFilter);
 
   const stats = {
-    total: historyList.length,
-    pass: historyList.filter(r => r.status === 'pass').length,
-    warning: historyList.filter(r => r.status === 'warning').length,
-    danger: historyList.filter(r => r.status === 'danger').length
+    total: verifyRecords.length,
+    pass: verifyRecords.filter(r => r.status === 'pass' && !r.mismatchReason).length,
+    warning: verifyRecords.filter(r => r.status === 'warning' || r.mismatchReason).length,
+    danger: verifyRecords.filter(r => r.status === 'danger').length
   };
 
   const handleHistoryClick = (record: VerifyRecord) => {
-    console.log('[MinePage] 点击历史记录:', record.serialNumber);
     Taro.navigateTo({
       url: `/pages/detail/index?id=${record.id}`
     });
   };
 
   const handleMenuClick = (action: string) => {
-    console.log('[MinePage] 点击菜单项:', action);
     Taro.showToast({ title: `${action}功能开发中`, icon: 'none' });
   };
 
@@ -93,8 +77,8 @@ const MinePage: React.FC = () => {
       <View className={styles.header}>
         <View className={styles.userCard}>
           <View className={styles.avatar}>
-            <Image 
-              className={styles.avatarImg} 
+            <Image
+              className={styles.avatarImg}
               src={userInfo?.avatar || 'https://picsum.photos/id/64/200/200'}
               mode="aspectFill"
               onError={(e) => console.error('[MinePage] 头像加载失败:', e)}
@@ -132,13 +116,13 @@ const MinePage: React.FC = () => {
       <View className={styles.content}>
         <View className={styles.section}>
           {menuItems.map(item => (
-            <View 
+            <View
               key={item.title}
               className={styles.listItem}
               onClick={() => handleMenuClick(item.title)}
             >
-              <View 
-                className={styles.itemIcon} 
+              <View
+                className={styles.itemIcon}
                 style={{ backgroundColor: `${item.color}15` }}
               >
                 {item.icon}
@@ -157,7 +141,7 @@ const MinePage: React.FC = () => {
 
         <View className={styles.historySection}>
           <Text className={styles.sectionTitle}>核验记录</Text>
-          
+
           <ScrollView scrollX className={styles.filterBar}>
             {filters.map(filter => (
               <Text
@@ -171,35 +155,31 @@ const MinePage: React.FC = () => {
                 {filter.label}
                 {filter.value !== 'all' && (
                   <Text style={{ marginLeft: '8rpx' }}>
-                    {filter.value === 'pass' ? stats.pass : 
+                    {filter.value === 'pass' ? stats.pass :
                      filter.value === 'warning' ? stats.warning :
                      filter.value === 'danger' ? stats.danger :
-                     historyList.filter(r => r.status === filter.value).length}
+                     verifyRecords.filter(r => r.status === filter.value).length}
                   </Text>
                 )}
               </Text>
             ))}
           </ScrollView>
 
-          {isLoading ? (
-            <View className={styles.loading}>
-              <Text>加载中...</Text>
-            </View>
-          ) : filteredList.length > 0 ? (
+          {filteredList.length > 0 ? (
             filteredList.map(record => (
-              <View 
+              <View
                 key={record.id}
                 className={styles.historyItem}
                 onClick={() => handleHistoryClick(record)}
               >
-                <View 
-                  className={styles.historyStatus} 
+                <View
+                  className={styles.historyStatus}
                   style={{ backgroundColor: getStatusColor(record.status) }}
                 />
                 <View className={styles.historyContent}>
                   <View className={styles.historyHeader}>
                     <Text className={styles.historyPart}>{record.partName}</Text>
-                    <View 
+                    <View
                       className={styles.historyBadge}
                       style={{ backgroundColor: getStatusColor(record.status) }}
                     >
@@ -207,8 +187,13 @@ const MinePage: React.FC = () => {
                     </View>
                   </View>
                   <Text className={styles.historyMeta}>
-                    {record.aircraftNo} · {record.position}
+                    {record.aircraftNoInput} · {record.positionInput}
                   </Text>
+                  {record.mismatchReason && (
+                    <Text className={styles.historyMismatch}>
+                      ⚠️ {record.mismatchReason}
+                    </Text>
+                  )}
                   <Text className={styles.historyTime}>
                     {record.verifyTime}
                   </Text>

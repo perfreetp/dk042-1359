@@ -20,17 +20,24 @@ const VerifyPage: React.FC = () => {
     aircraftNo,
     position,
     positionConfirmed,
+    activeTodoId,
     setSearchSerial,
     setAircraftNo,
     setPosition,
     setPositionConfirmed,
+    setActiveTodoId,
     verifyPart,
     confirmVerify,
-    resetState
+    resetState,
+    initStore
   } = useVerifyStore();
 
   const [inputValue, setInputValue] = useState('');
   const [showResult, setShowResult] = useState(false);
+
+  useEffect(() => {
+    initStore();
+  }, [initStore]);
 
   useEffect(() => {
     if (searchSerial) {
@@ -39,26 +46,37 @@ const VerifyPage: React.FC = () => {
   }, [searchSerial]);
 
   useDidShow(() => {
-    console.log('[VerifyPage] 页面显示');
     if (searchSerial && !currentPart) {
       handleVerify();
     }
   });
 
+  const isAircraftMatch = currentPart
+    ? aircraftNo.toUpperCase() === currentPart.lastInstallAircraft.toUpperCase()
+    : true;
+  const isPositionMatch = currentPart
+    ? position === currentPart.lastInstallPosition
+    : true;
+  const hasMismatch = !isAircraftMatch || !isPositionMatch;
+
+  const canConfirmPass = currentPart
+    ? currentPart.status === 'pass' && !hasMismatch && positionConfirmed
+    : false;
+  const canConfirmOther = currentPart
+    ? currentPart.status !== 'pass' && positionConfirmed
+    : false;
+
   const handleScan = useCallback(() => {
-    console.log('[VerifyPage] 点击扫描');
     Taro.scanCode({
       onlyFromCamera: false,
       scanType: ['barCode', 'qrCode'],
       success: (res) => {
-        console.log('[VerifyPage] 扫描成功:', res.result);
         const code = res.result.toUpperCase();
         setInputValue(code);
         setSearchSerial(code);
         handleVerifyWithSerial(code);
       },
-      fail: (err) => {
-        console.error('[VerifyPage] 扫描失败:', err);
+      fail: () => {
         Taro.showToast({ title: '扫描取消', icon: 'none' });
       }
     });
@@ -66,14 +84,13 @@ const VerifyPage: React.FC = () => {
 
   const handleVerifyWithSerial = useCallback(async (serial: string) => {
     if (!validateSerialNumber(serial)) {
-      console.warn('[VerifyPage] 序号格式不正确:', serial);
       Taro.showToast({ title: '请输入有效的序号', icon: 'none' });
       return;
     }
-    
+
     setShowResult(false);
     const result = await verifyPart(serial);
-    
+
     if (result) {
       setShowResult(true);
     } else {
@@ -95,7 +112,6 @@ const VerifyPage: React.FC = () => {
   }, [setSearchSerial, resetState]);
 
   const handleQuickInput = useCallback((sn: string) => {
-    console.log('[VerifyPage] 快速输入:', sn);
     setInputValue(sn);
     setSearchSerial(sn);
     handleVerifyWithSerial(sn);
@@ -111,14 +127,33 @@ const VerifyPage: React.FC = () => {
       return;
     }
 
-    const success = await confirmVerify();
-    
-    if (success) {
-      Taro.showToast({ 
-        title: '核验确认成功', 
-        icon: 'success' 
+    if (hasMismatch && currentPart?.status === 'pass') {
+      Taro.showModal({
+        title: '位置不一致提示',
+        content: '飞机号或安装位置与系统记录不一致，核验结果将标记为"需复核"。是否继续确认？',
+        confirmText: '继续确认',
+        cancelText: '取消',
+        success: async (res) => {
+          if (res.confirm) {
+            await doConfirm();
+          }
+        }
       });
-      
+      return;
+    }
+
+    await doConfirm();
+  }, [positionConfirmed, hasMismatch, currentPart]);
+
+  const doConfirm = useCallback(async () => {
+    const success = await confirmVerify();
+
+    if (success) {
+      Taro.showToast({
+        title: '核验确认成功',
+        icon: 'success'
+      });
+
       setTimeout(() => {
         resetState();
         setShowResult(false);
@@ -127,7 +162,7 @@ const VerifyPage: React.FC = () => {
     } else {
       Taro.showToast({ title: '确认失败，请重试', icon: 'none' });
     }
-  }, [positionConfirmed, confirmVerify, resetState]);
+  }, [confirmVerify, resetState]);
 
   const handlePositionEdit = useCallback(() => {
     Taro.showModal({
@@ -137,26 +172,55 @@ const VerifyPage: React.FC = () => {
       content: position,
       success: (res) => {
         if (res.confirm && res.content) {
-          console.log('[VerifyPage] 修改位置为:', res.content);
           setPosition(res.content.trim());
         }
       }
     });
   }, [position, setPosition]);
 
-  const handleReport = useCallback(() => {
-    console.log('[VerifyPage] 跳转异常上报');
+  const handleAircraftEdit = useCallback(() => {
+    Taro.showModal({
+      title: '修改飞机号',
+      editable: true,
+      placeholderText: '请输入实际飞机号',
+      content: aircraftNo,
+      success: (res) => {
+        if (res.confirm && res.content) {
+          setAircraftNo(res.content.trim().toUpperCase());
+        }
+      }
+    });
+  }, [aircraftNo, setAircraftNo]);
+
+  const handleMismatchReport = useCallback(() => {
     const reportState = useReportStore.getState();
     reportState.setSerialNumber(searchSerial);
+    reportState.setPartName(currentPart?.partName || '');
+    reportState.setReportType('mismatch');
+    const reasons: string[] = [];
+    if (!isAircraftMatch) {
+      reasons.push(`飞机号不一致（系统:${currentPart?.lastInstallAircraft} 现场:${aircraftNo}）`);
+    }
+    if (!isPositionMatch) {
+      reasons.push(`安装位置不一致（系统:${currentPart?.lastInstallPosition} 现场:${position}）`);
+    }
+    reportState.setRemark(reasons.join('；'));
+    Taro.switchTab({ url: '/pages/report/index' });
+  }, [searchSerial, currentPart, aircraftNo, position, isAircraftMatch, isPositionMatch]);
+
+  const handleReport = useCallback(() => {
+    const reportState = useReportStore.getState();
+    reportState.setSerialNumber(searchSerial);
+    reportState.setPartName(currentPart?.partName || '');
     reportState.setReportType('noRecord');
     Taro.switchTab({ url: '/pages/report/index' });
-  }, [searchSerial]);
+  }, [searchSerial, currentPart]);
 
   return (
     <ScrollView scrollY className={styles.page}>
       <View className={styles.searchSection}>
         <Text className={styles.searchTitle}>航材序号</Text>
-        
+
         <View className={styles.searchInput}>
           <Text className={styles.searchIcon}>🔍</Text>
           <Input
@@ -179,7 +243,7 @@ const VerifyPage: React.FC = () => {
         </Text>
         <View className={styles.quickInput}>
           {mockPartInfoList.slice(0, 5).map(part => (
-            <Text 
+            <Text
               key={part.id}
               className={styles.quickTag}
               onClick={() => handleQuickInput(part.serialNumber)}
@@ -190,13 +254,13 @@ const VerifyPage: React.FC = () => {
         </View>
 
         <View className={styles.buttonGroup}>
-          <Button 
+          <Button
             className={classnames(styles.btn, styles.btnSecondary)}
             onClick={handleScan}
           >
             📷 扫描铭牌
           </Button>
-          <Button 
+          <Button
             className={classnames(styles.btn, styles.btnPrimary)}
             onClick={handleVerify}
             disabled={!inputValue.trim() || isLoading}
@@ -241,13 +305,47 @@ const VerifyPage: React.FC = () => {
               remainingHours={currentPart.remainingHours}
               remainingCycles={currentPart.remainingCycles}
             />
-            
+
+            {hasMismatch && (
+              <View className={styles.mismatchWarning}>
+                <Text className={styles.mismatchTitle}>⚠️ 现场信息不一致</Text>
+                {!isAircraftMatch && (
+                  <View className={styles.mismatchRow}>
+                    <Text className={styles.mismatchLabel}>飞机号不一致</Text>
+                    <Text className={styles.mismatchDetail}>
+                      系统: {currentPart.lastInstallAircraft} → 现场: {aircraftNo}
+                    </Text>
+                  </View>
+                )}
+                {!isPositionMatch && (
+                  <View className={styles.mismatchRow}>
+                    <Text className={styles.mismatchLabel}>位置不一致</Text>
+                    <Text className={styles.mismatchDetail}>
+                      系统: {currentPart.lastInstallPosition} → 现场: {position}
+                    </Text>
+                  </View>
+                )}
+                <View className={styles.mismatchActions}>
+                  <Button
+                    className={styles.mismatchReportBtn}
+                    onClick={handleMismatchReport}
+                  >
+                    📷 异常上报
+                  </Button>
+                </View>
+                {currentPart.status === 'pass' && (
+                  <Text className={styles.mismatchNote}>
+                    提示：位置不一致时，可放行件将自动标记为"需复核"
+                  </Text>
+                )}
+              </View>
+            )}
+
             <VerifyResult
               part={currentPart}
               aircraftNo={aircraftNo}
               position={position}
               positionConfirmed={positionConfirmed}
-              onConfirm={handleConfirmVerify}
               onPositionChange={setPosition}
               onPositionConfirm={setPositionConfirmed}
             />
@@ -273,25 +371,36 @@ const VerifyPage: React.FC = () => {
               {positionConfirmed && <Text className={styles.checkIcon}>✓</Text>}
             </View>
             <Text className={styles.checkboxLabel}>
-              我已确认当前飞机号 
-              <Text className={styles.highlight}>{aircraftNo}</Text> 
-              和安装位置 
-              <Text className={styles.highlight} onClick={(e) => { e.stopPropagation(); handlePositionEdit(); }}>
+              我已确认当前飞机号
+              <Text
+                className={classnames(styles.highlight, !isAircraftMatch && styles.highlightDanger)}
+                onClick={(e) => { e.stopPropagation(); handleAircraftEdit(); }}
+              >
+                {aircraftNo}
+              </Text>
+              和安装位置
+              <Text
+                className={classnames(styles.highlight, !isPositionMatch && styles.highlightDanger)}
+                onClick={(e) => { e.stopPropagation(); handlePositionEdit(); }}
+              >
                 {position}
               </Text>
               与实际情况一致
             </Text>
           </View>
-          
+
           <Button
             className={classnames(
               styles.confirmBtn,
-              positionConfirmed && styles.confirmBtnEnabled
+              positionConfirmed && styles.confirmBtnEnabled,
+              hasMismatch && currentPart.status === 'pass' && styles.confirmBtnWarning
             )}
             onClick={handleConfirmVerify}
             disabled={!positionConfirmed}
           >
-            确认核验结果
+            {hasMismatch && currentPart.status === 'pass'
+              ? '确认核验（将标记需复核）'
+              : '确认核验结果'}
           </Button>
         </View>
       )}

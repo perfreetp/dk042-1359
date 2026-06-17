@@ -1,68 +1,85 @@
 import { create } from 'zustand';
-import type { PartInfo, VerifyRecord, VerifyStatus } from '@/types';
-import { getPartInfoBySerial, getVerifyRecords } from '@/data/mock';
+import type { PartInfo, VerifyRecord, VerifyStatus, TodoVerify } from '@/types';
+import { getPartInfoBySerial, getVerifyRecords, getTodoList } from '@/data/mock';
 
 interface VerifyState {
   currentPart: PartInfo | null;
   verifyRecords: VerifyRecord[];
+  todoList: TodoVerify[];
   isLoading: boolean;
   error: string | null;
   searchSerial: string;
   aircraftNo: string;
   position: string;
   positionConfirmed: boolean;
+  activeTodoId: string | null;
+  initialized: boolean;
   setSearchSerial: (serial: string) => void;
   setAircraftNo: (no: string) => void;
   setPosition: (pos: string) => void;
   setPositionConfirmed: (confirmed: boolean) => void;
+  setActiveTodoId: (id: string | null) => void;
   verifyPart: (serial: string) => Promise<PartInfo | null>;
   confirmVerify: () => Promise<boolean>;
-  loadRecords: () => void;
+  completeTodo: (id: string) => void;
+  initStore: () => void;
   resetState: () => void;
 }
 
 export const useVerifyStore = create<VerifyState>((set, get) => ({
   currentPart: null,
   verifyRecords: [],
+  todoList: [],
   isLoading: false,
   error: null,
   searchSerial: '',
   aircraftNo: '',
   position: '',
   positionConfirmed: false,
+  activeTodoId: null,
+  initialized: false,
 
   setSearchSerial: (serial) => set({ searchSerial: serial }),
   setAircraftNo: (no) => set({ aircraftNo: no }),
   setPosition: (pos) => set({ position: pos }),
   setPositionConfirmed: (confirmed) => set({ positionConfirmed: confirmed }),
+  setActiveTodoId: (id) => set({ activeTodoId: id }),
+
+  initStore: () => {
+    const state = get();
+    if (state.initialized) return;
+    const records = getVerifyRecords();
+    const todos = getTodoList();
+    set({
+      verifyRecords: records,
+      todoList: todos,
+      initialized: true
+    });
+  },
 
   verifyPart: async (serial) => {
-    console.log('[VerifyStore] 开始核验航材，序号:', serial);
     set({ isLoading: true, error: null });
-    
+
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const part = getPartInfoBySerial(serial);
-      
+
       if (part) {
-        console.log('[VerifyStore] 核验成功，航材信息:', part.partName, '状态:', part.statusText);
-        set({ 
+        set({
           currentPart: part,
           aircraftNo: part.lastInstallAircraft,
           position: part.lastInstallPosition
         });
         return part;
       } else {
-        console.log('[VerifyStore] 未找到航材信息，序号:', serial);
-        set({ 
+        set({
           currentPart: null,
           error: '系统中未找到该航材信息'
         });
         return null;
       }
     } catch (err) {
-      console.error('[VerifyStore] 核验失败:', err);
       set({ error: '核验失败，请稍后重试', currentPart: null });
       return null;
     } finally {
@@ -71,19 +88,33 @@ export const useVerifyStore = create<VerifyState>((set, get) => ({
   },
 
   confirmVerify: async () => {
-    const { currentPart, aircraftNo, position, positionConfirmed, verifyRecords } = get();
-    
-    if (!currentPart) {
-      console.error('[VerifyStore] 确认核验失败：未获取到航材信息');
-      return false;
-    }
-    
-    if (!positionConfirmed) {
-      console.error('[VerifyStore] 确认核验失败：位置未确认');
-      return false;
-    }
+    const { currentPart, aircraftNo, position, positionConfirmed, verifyRecords, activeTodoId, todoList } = get();
 
-    console.log('[VerifyStore] 确认核验，飞机号:', aircraftNo, '位置:', position);
+    if (!currentPart) return false;
+    if (!positionConfirmed) return false;
+
+    const isAircraftMatch = aircraftNo.toUpperCase() === currentPart.lastInstallAircraft.toUpperCase();
+    const isPositionMatch = position === currentPart.lastInstallPosition;
+
+    let finalStatus: VerifyStatus = currentPart.status;
+    let finalStatusText: string = currentPart.statusText;
+    let mismatchReason: string | undefined;
+
+    if (!isAircraftMatch || !isPositionMatch) {
+      const reasons: string[] = [];
+      if (!isAircraftMatch) {
+        reasons.push(`飞机号不一致（系统:${currentPart.lastInstallAircraft} 现场:${aircraftNo}）`);
+      }
+      if (!isPositionMatch) {
+        reasons.push(`安装位置不一致（系统:${currentPart.lastInstallPosition} 现场:${position}）`);
+      }
+      mismatchReason = reasons.join('；');
+
+      if (finalStatus === 'pass') {
+        finalStatus = 'warning';
+        finalStatusText = '需复核（位置不一致）';
+      }
+    }
 
     const newRecord: VerifyRecord = {
       id: String(Date.now()),
@@ -92,44 +123,59 @@ export const useVerifyStore = create<VerifyState>((set, get) => ({
       aircraftNo: currentPart.lastInstallAircraft,
       position: currentPart.lastInstallPosition,
       positionConfirmed: true,
-      status: currentPart.status,
-      statusText: currentPart.statusText,
+      status: finalStatus,
+      statusText: finalStatusText,
       verifyTime: new Date().toLocaleString('zh-CN'),
       verifyUser: '维修员',
       aircraftNoInput: aircraftNo,
-      positionInput: position
+      positionInput: position,
+      mismatchReason,
+      todoId: activeTodoId || undefined
     };
 
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
+      let updatedTodos = todoList;
+      if (activeTodoId) {
+        updatedTodos = todoList.map(t =>
+          t.id === activeTodoId
+            ? { ...t, completed: true, completedAt: new Date().toLocaleString('zh-CN') }
+            : t
+        );
+      }
+
       set({
-        verifyRecords: [newRecord, ...verifyRecords]
+        verifyRecords: [newRecord, ...verifyRecords],
+        todoList: updatedTodos
       });
-      
-      console.log('[VerifyStore] 核验记录已保存');
+
       return true;
     } catch (err) {
-      console.error('[VerifyStore] 保存核验记录失败:', err);
       return false;
     }
   },
 
-  loadRecords: () => {
-    console.log('[VerifyStore] 加载核验记录');
-    const records = getVerifyRecords();
-    set({ verifyRecords: records });
+  completeTodo: (id) => {
+    const { todoList } = get();
+    set({
+      todoList: todoList.map(t =>
+        t.id === id
+          ? { ...t, completed: true, completedAt: new Date().toLocaleString('zh-CN') }
+          : t
+      )
+    });
   },
 
   resetState: () => {
-    console.log('[VerifyStore] 重置核验状态');
     set({
       currentPart: null,
       searchSerial: '',
       aircraftNo: '',
       position: '',
       positionConfirmed: false,
-      error: null
+      error: null,
+      activeTodoId: null
     });
   }
 }));

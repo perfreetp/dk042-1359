@@ -252,6 +252,15 @@ const DetailPage: React.FC = () => {
               {record.positionConfirmed ? '已确认 ✓' : '未确认 ✗'}
             </Text>
           </View>
+
+          {record.mismatchReason && (
+            <View className={styles.infoRow}>
+              <Text className={styles.rowLabel}>不一致原因</Text>
+              <Text className={classnames(styles.rowValue, styles.rowValueDanger)}>
+                {record.mismatchReason}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
     </ScrollView>

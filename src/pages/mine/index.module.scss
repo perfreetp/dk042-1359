@@ -255,6 +255,13 @@
   color: $color-text-tertiary;
 }
 
+.historyMismatch {
+  font-size: $font-size-xs;
+  color: $color-status-warning;
+  margin-top: $spacing-xs;
+  @include text-ellipsis-multi(2);
+}
+
 .emptyState {
   padding: $spacing-xxl $spacing-lg;
   text-align: center;

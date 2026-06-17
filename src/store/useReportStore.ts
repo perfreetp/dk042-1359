@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ReportItem } from '@/types';
+import type { ReportItem, ReportStatus } from '@/types';
 import { getReportList } from '@/data/mock';
 
 type ReportType = 'blurry' | 'mismatch' | 'noRecord';
@@ -15,6 +15,7 @@ interface ReportState {
   parkingPosition: string;
   photos: string[];
   remark: string;
+  initialized: boolean;
   setReportType: (type: ReportType) => void;
   setSerialNumber: (sn: string) => void;
   setPartName: (name: string) => void;
@@ -25,7 +26,8 @@ interface ReportState {
   removePhoto: (index: number) => void;
   setRemark: (remark: string) => void;
   submitReport: () => Promise<boolean>;
-  loadReportList: () => void;
+  updateReportStatus: (id: string, status: ReportStatus) => void;
+  initStore: () => void;
   resetState: () => void;
 }
 
@@ -33,6 +35,12 @@ const reportTypeMap: Record<ReportType, string> = {
   blurry: '铭牌模糊',
   mismatch: '序号不符',
   noRecord: '系统无记录'
+};
+
+const reportStatusMap: Record<ReportStatus, string> = {
+  pending: '待处理',
+  processing: '处理中',
+  resolved: '已解决'
 };
 
 export const useReportStore = create<ReportState>((set, get) => ({
@@ -46,6 +54,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   parkingPosition: '',
   photos: [],
   remark: '',
+  initialized: false,
 
   setReportType: (type) => set({ reportType: type }),
   setSerialNumber: (sn) => set({ serialNumber: sn }),
@@ -59,23 +68,22 @@ export const useReportStore = create<ReportState>((set, get) => ({
   })),
   setRemark: (remark) => set({ remark }),
 
+  initStore: () => {
+    const state = get();
+    if (state.initialized) return;
+    const list = getReportList();
+    set({
+      reportList: list,
+      initialized: true
+    });
+  },
+
   submitReport: async () => {
     const { reportType, serialNumber, partName, flightNo, parkingPosition, photos, remark, reportList } = get();
 
-    console.log('[ReportStore] 提交异常报告，类型:', reportType, '序号:', serialNumber);
-
-    if (!serialNumber) {
-      console.error('[ReportStore] 提交失败：序号为空');
-      return false;
-    }
-    if (!flightNo) {
-      console.error('[ReportStore] 提交失败：航班号为空');
-      return false;
-    }
-    if (!parkingPosition) {
-      console.error('[ReportStore] 提交失败：停场位置为空');
-      return false;
-    }
+    if (!serialNumber) return false;
+    if (!flightNo) return false;
+    if (!parkingPosition) return false;
 
     set({ isLoading: true, error: null });
 
@@ -103,23 +111,34 @@ export const useReportStore = create<ReportState>((set, get) => ({
         isLoading: false
       });
 
-      console.log('[ReportStore] 异常报告提交成功');
       return true;
     } catch (err) {
-      console.error('[ReportStore] 提交失败:', err);
       set({ error: '提交失败，请稍后重试', isLoading: false });
       return false;
     }
   },
 
-  loadReportList: () => {
-    console.log('[ReportStore] 加载上报记录');
-    const list = getReportList();
-    set({ reportList: list });
+  updateReportStatus: (id, status) => {
+    const { reportList } = get();
+    const now = new Date().toLocaleString('zh-CN');
+    set({
+      reportList: reportList.map(r => {
+        if (r.id !== id) return r;
+        const updated = { ...r, status, statusText: reportStatusMap[status] };
+        if (status === 'processing') {
+          updated.processTime = now;
+          updated.processRemark = 'MCC已受理，正在核实处理';
+        }
+        if (status === 'resolved') {
+          updated.resolveTime = now;
+          updated.resolveRemark = '问题已解决，可重新核验';
+        }
+        return updated;
+      })
+    });
   },
 
   resetState: () => {
-    console.log('[ReportStore] 重置上报状态');
     set({
       reportType: 'blurry',
       serialNumber: '',

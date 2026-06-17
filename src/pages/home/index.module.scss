@@ -176,7 +176,7 @@
 
   &:active {
     background-color: $color-bg-hover;
-    margin: 0 -$spacing-lg;
+    margin: 0 (-$spacing-lg);
     padding-left: $spacing-lg;
     padding-right: $spacing-lg;
     border-radius: $radius-sm;
@@ -301,6 +301,23 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
   @include text-ellipsis;
+}
+
+.historyMismatch {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-status-warning;
+  margin-top: $spacing-xs;
+  @include text-ellipsis-multi(2);
+}
+
+.sectionBadge {
+  font-size: $font-size-xs;
+  color: $color-status-pass;
+  background-color: $color-bg-pass;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-xs;
+  font-weight: $font-weight-medium;
 }
 
 .loading {

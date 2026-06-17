@@ -138,6 +138,11 @@
   font-weight: $font-weight-semibold;
 }
 
+.rowValueDanger {
+  color: $color-status-danger;
+  font-weight: $font-weight-semibold;
+}
+
 .warningSection {
   background-color: $color-bg-warning;
   border-radius: $radius-md;

@@ -4,7 +4,7 @@ import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useReportStore } from '@/store/useReportStore';
-import type { ReportItem } from '@/types';
+import type { ReportItem, ReportStatus } from '@/types';
 
 type TabType = 'form' | 'history';
 type ReportType = 'blurry' | 'mismatch' | 'noRecord';
@@ -17,10 +17,10 @@ const reportTypes: { value: ReportType; label: string; desc: string }[] = [
 
 const ReportPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('form');
-  const [historyList, setHistoryList] = useState<ReportItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const {
+    reportList,
     reportType,
     serialNumber,
     partName,
@@ -38,62 +38,34 @@ const ReportPage: React.FC = () => {
     removePhoto,
     setRemark,
     submitReport,
-    loadReportList,
+    updateReportStatus,
+    initStore,
     resetState
   } = useReportStore();
 
-  const loadData = useCallback(async () => {
-    console.log('[ReportPage] 加载上报历史');
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      loadReportList();
-      const state = useReportStore.getState();
-      setHistoryList(state.reportList);
-    } catch (err) {
-      console.error('[ReportPage] 加载失败:', err);
-    } finally {
-      setIsLoading(false);
-      Taro.stopPullDownRefresh();
-    }
-  }, [loadReportList]);
-
   useEffect(() => {
-    if (activeTab === 'history') {
-      loadData();
-    }
-  }, [activeTab, loadData]);
+    initStore();
+  }, [initStore]);
 
   useDidShow(() => {
-    console.log('[ReportPage] 页面显示');
-    if (activeTab === 'history') {
-      loadData();
-    }
+    initStore();
   });
 
   usePullDownRefresh(() => {
-    console.log('[ReportPage] 下拉刷新');
-    if (activeTab === 'history') {
-      loadData();
-    } else {
-      Taro.stopPullDownRefresh();
-    }
+    Taro.stopPullDownRefresh();
   });
 
   const handleChooseImage = useCallback(() => {
-    console.log('[ReportPage] 选择图片');
     Taro.chooseImage({
       count: 9 - photos.length,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        console.log('[ReportPage] 图片选择成功:', res.tempFilePaths);
         res.tempFilePaths.forEach(path => {
           addPhoto(path);
         });
       },
       fail: (err) => {
-        console.error('[ReportPage] 图片选择失败:', err);
         if (err.errMsg !== 'chooseImage:fail cancel') {
           Taro.showToast({ title: '选择图片失败', icon: 'none' });
         }
@@ -102,7 +74,6 @@ const ReportPage: React.FC = () => {
   }, [photos.length, addPhoto]);
 
   const handleRemovePhoto = useCallback((index: number) => {
-    console.log('[ReportPage] 移除图片:', index);
     removePhoto(index);
   }, [removePhoto]);
 
@@ -120,7 +91,6 @@ const ReportPage: React.FC = () => {
       return;
     }
 
-    console.log('[ReportPage] 提交异常报告');
     const success = await submitReport();
 
     if (success) {
@@ -128,30 +98,50 @@ const ReportPage: React.FC = () => {
         title: '上报成功',
         icon: 'success'
       });
-      
+
       setTimeout(() => {
         resetState();
         setActiveTab('history');
-        loadData();
       }, 1500);
     } else {
       Taro.showToast({ title: '上报失败，请重试', icon: 'none' });
     }
-  }, [serialNumber, flightNo, parkingPosition, submitReport, resetState, loadData]);
+  }, [serialNumber, flightNo, parkingPosition, submitReport, resetState]);
 
-  const getStatusColor = (status: string): string => {
-    const colorMap: Record<string, string> = {
+  const handleToggleExpand = useCallback((id: string) => {
+    setExpandedId(prev => prev === id ? null : id);
+  }, []);
+
+  const handleSimulateStatus = useCallback((id: string, currentStatus: ReportStatus) => {
+    if (currentStatus === 'pending') {
+      updateReportStatus(id, 'processing');
+    } else if (currentStatus === 'processing') {
+      updateReportStatus(id, 'resolved');
+    }
+  }, [updateReportStatus]);
+
+  const getStatusColor = (status: ReportStatus): string => {
+    const colorMap: Record<ReportStatus, string> = {
       pending: '#FF7D00',
       processing: '#165DFF',
       resolved: '#00B42A'
     };
-    return colorMap[status] || '#86909C';
+    return colorMap[status];
+  };
+
+  const getStatusSteps = (item: ReportItem) => {
+    const steps = [
+      { label: '已提交', time: item.reportTime, active: true },
+      { label: '处理中', time: item.processTime || '', active: item.status !== 'pending' },
+      { label: '已解决', time: item.resolveTime || '', active: item.status === 'resolved' }
+    ];
+    return steps;
   };
 
   return (
     <ScrollView scrollY className={styles.page}>
       <View className={styles.tabs}>
-        <View 
+        <View
           className={classnames(styles.tab, activeTab === 'form' && styles.active)}
           onClick={() => setActiveTab('form')}
         >
@@ -159,7 +149,7 @@ const ReportPage: React.FC = () => {
             异常上报
           </Text>
         </View>
-        <View 
+        <View
           className={classnames(styles.tab, activeTab === 'history' && styles.active)}
           onClick={() => setActiveTab('history')}
         >
@@ -176,7 +166,7 @@ const ReportPage: React.FC = () => {
               <Text className={styles.sectionTitle}>异常类型</Text>
               <View className={styles.typeSelector}>
                 {reportTypes.map(type => (
-                  <View 
+                  <View
                     key={type.value}
                     className={classnames(
                       styles.typeOption,
@@ -203,7 +193,7 @@ const ReportPage: React.FC = () => {
 
             <View className={styles.formSection}>
               <Text className={styles.sectionTitle}>航材信息</Text>
-              
+
               <View className={styles.formRow}>
                 <Text className={styles.formLabel}>
                   <Text className={styles.formRequired}>*</Text>
@@ -232,7 +222,7 @@ const ReportPage: React.FC = () => {
 
             <View className={styles.formSection}>
               <Text className={styles.sectionTitle}>航班信息</Text>
-              
+
               <View className={styles.formRow}>
                 <Text className={styles.formLabel}>
                   <Text className={styles.formRequired}>*</Text>
@@ -278,9 +268,8 @@ const ReportPage: React.FC = () => {
                             urls: photos
                           });
                         }}
-                        onError={(e) => console.error('[ReportPage] 图片加载失败:', e)}
                       />
-                      <View 
+                      <View
                         className={styles.photoRemove}
                         onClick={() => handleRemovePhoto(index)}
                       >
@@ -288,7 +277,7 @@ const ReportPage: React.FC = () => {
                       </View>
                     </View>
                   ))}
-                  
+
                   {photos.length < 9 && (
                     <View className={styles.photoAdd} onClick={handleChooseImage}>
                       <Text className={styles.photoAddIcon}>📷</Text>
@@ -313,25 +302,30 @@ const ReportPage: React.FC = () => {
           </View>
         ) : (
           <View className={styles.historySection}>
-            {isLoading ? (
-              <View className={styles.loading}>
-                <Text>加载中...</Text>
-              </View>
-            ) : historyList.length > 0 ? (
-              historyList.map(item => (
-                <View 
+            {reportList.length > 0 ? (
+              reportList.map(item => (
+                <View
                   key={item.id}
                   className={classnames(styles.historyItem, styles[`status-${item.status}`])}
                 >
-                  <View className={styles.historyHeader}>
-                    <Text className={styles.historyType}>{item.typeText}</Text>
-                    <View 
-                      className={classnames(styles.historyStatus, item.status)}
-                      style={{ backgroundColor: getStatusColor(item.status) }}
-                    >
-                      {item.statusText}
+                  <View
+                    className={styles.historyHeader}
+                    onClick={() => handleToggleExpand(item.id)}
+                  >
+                    <View className={styles.historyHeaderLeft}>
+                      <Text className={styles.historyType}>{item.typeText}</Text>
+                      <View
+                        className={styles.historyStatus}
+                        style={{ backgroundColor: getStatusColor(item.status) }}
+                      >
+                        {item.statusText}
+                      </View>
                     </View>
+                    <Text className={styles.historyExpand}>
+                      {expandedId === item.id ? '▲' : '▼'}
+                    </Text>
                   </View>
+
                   <Text className={styles.historySerial}>
                     {item.partName} · {item.serialNumber}
                   </Text>
@@ -341,8 +335,95 @@ const ReportPage: React.FC = () => {
                   </View>
                   <View className={styles.historyMeta}>
                     <Text>🕐 {item.reportTime}</Text>
-                    <Text>👤 {item.reportUser}</Text>
                   </View>
+
+                  {expandedId === item.id && (
+                    <View className={styles.detailSection}>
+                      <View className={styles.statusSteps}>
+                        {getStatusSteps(item).map((step, idx) => (
+                          <View key={idx} className={styles.stepItem}>
+                            <View className={classnames(
+                              styles.stepDot,
+                              step.active && styles.stepDotActive
+                            )} />
+                            {idx < 2 && <View className={classnames(
+                              styles.stepLine,
+                              step.active && styles.stepLineActive
+                            )} />}
+                            <View className={styles.stepContent}>
+                              <Text className={classnames(
+                                styles.stepLabel,
+                                step.active && styles.stepLabelActive
+                              )}>
+                                {step.label}
+                              </Text>
+                              {step.time && (
+                                <Text className={styles.stepTime}>{step.time}</Text>
+                              )}
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+
+                      {item.remark && (
+                        <View className={styles.detailRow}>
+                          <Text className={styles.detailLabel}>上报说明</Text>
+                          <Text className={styles.detailValue}>{item.remark}</Text>
+                        </View>
+                      )}
+                      {item.processRemark && (
+                        <View className={styles.detailRow}>
+                          <Text className={styles.detailLabel}>处理备注</Text>
+                          <Text className={styles.detailValue}>{item.processRemark}</Text>
+                        </View>
+                      )}
+                      {item.resolveRemark && (
+                        <View className={styles.detailRow}>
+                          <Text className={styles.detailLabel}>解决说明</Text>
+                          <Text className={styles.detailValue}>{item.resolveRemark}</Text>
+                        </View>
+                      )}
+
+                      <View className={styles.detailRow}>
+                        <Text className={styles.detailLabel}>航班号</Text>
+                        <Text className={styles.detailValue}>{item.flightNo}</Text>
+                      </View>
+                      <View className={styles.detailRow}>
+                        <Text className={styles.detailLabel}>停场位置</Text>
+                        <Text className={styles.detailValue}>{item.parkingPosition}</Text>
+                      </View>
+                      <View className={styles.detailRow}>
+                        <Text className={styles.detailLabel}>上报人</Text>
+                        <Text className={styles.detailValue}>{item.reportUser}</Text>
+                      </View>
+
+                      {item.photos && item.photos.length > 0 && (
+                        <View className={styles.detailRow}>
+                          <Text className={styles.detailLabel}>现场照片</Text>
+                          <View className={styles.detailPhotos}>
+                            {item.photos.map((photo, idx) => (
+                              <Image
+                                key={idx}
+                                className={styles.detailPhoto}
+                                src={photo}
+                                mode="aspectFill"
+                                onClick={() => Taro.previewImage({ current: photo, urls: item.photos })}
+                              />
+                            ))}
+                          </View>
+                        </View>
+                      )}
+
+                      {item.status !== 'resolved' && (
+                        <Button
+                          className={styles.simulateBtn}
+                          onClick={() => handleSimulateStatus(item.id, item.status)}
+                        >
+                          {item.status === 'pending' ? '模拟推进：标记处理中' : '模拟推进：标记已解决'}
+                        </Button>
+                      )}
+                    </View>
+                  )}
                 </View>
               ))
             ) : (

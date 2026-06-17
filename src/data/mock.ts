@@ -322,7 +322,9 @@ export const mockReportList: ReportItem[] = [
     reportTime: '2024-06-17 07:45:20',
     reportUser: '维修员',
     status: 'processing',
-    statusText: '处理中'
+    statusText: '处理中',
+    processTime: '2024-06-17 08:10:00',
+    processRemark: '已通知航材控制岗，正在核实铭牌信息'
   },
   {
     id: '2',
@@ -337,7 +339,11 @@ export const mockReportList: ReportItem[] = [
     reportTime: '2024-06-16 14:30:55',
     reportUser: '维修员',
     status: 'resolved',
-    statusText: '已解决'
+    statusText: '已解决',
+    processTime: '2024-06-16 15:00:00',
+    processRemark: '已确认实物序号，系统记录已更正',
+    resolveTime: '2024-06-16 16:30:00',
+    resolveRemark: '系统记录已更新，核验通过可放行'
   },
   {
     id: '3',
@@ -367,7 +373,11 @@ export const mockReportList: ReportItem[] = [
     reportTime: '2024-06-14 16:40:15',
     reportUser: '维修员',
     status: 'resolved',
-    statusText: '已解决'
+    statusText: '已解决',
+    processTime: '2024-06-14 17:00:00',
+    processRemark: '已安排清洁铭牌并重新核验',
+    resolveTime: '2024-06-14 18:20:00',
+    resolveRemark: '清洁后序号可辨认，核验通过'
   },
   {
     id: '5',
@@ -382,7 +392,9 @@ export const mockReportList: ReportItem[] = [
     reportTime: '2024-06-13 09:25:30',
     reportUser: '维修员',
     status: 'processing',
-    statusText: '处理中'
+    statusText: '处理中',
+    processTime: '2024-06-13 10:00:00',
+    processRemark: '已联系工程部门核实，等待回复'
   }
 ];
 
@@ -394,7 +406,8 @@ export const mockTodoList: TodoVerify[] = [
     partName: '主起落架减震支柱',
     serialNumber: 'PN-2024-001234',
     deadline: '2024-06-17 10:00',
-    priority: 'high'
+    priority: 'high',
+    completed: false
   },
   {
     id: '2',
@@ -403,7 +416,8 @@ export const mockTodoList: TodoVerify[] = [
     partName: '发动机高压涡轮叶片',
     serialNumber: 'PN-2024-001235',
     deadline: '2024-06-17 11:30',
-    priority: 'high'
+    priority: 'high',
+    completed: false
   },
   {
     id: '3',
@@ -412,7 +426,8 @@ export const mockTodoList: TodoVerify[] = [
     partName: '辅助动力装置APU',
     serialNumber: 'PN-2024-001236',
     deadline: '2024-06-17 12:00',
-    priority: 'high'
+    priority: 'high',
+    completed: false
   },
   {
     id: '4',
@@ -421,7 +436,8 @@ export const mockTodoList: TodoVerify[] = [
     partName: '空调系统ACM',
     serialNumber: 'PN-2024-001239',
     deadline: '2024-06-18 08:00',
-    priority: 'medium'
+    priority: 'medium',
+    completed: false
   },
   {
     id: '5',
@@ -430,7 +446,8 @@ export const mockTodoList: TodoVerify[] = [
     partName: '燃油流量传感器',
     serialNumber: 'PN-2024-001243',
     deadline: '2024-06-18 14:00',
-    priority: 'medium'
+    priority: 'medium',
+    completed: false
   }
 ];
 

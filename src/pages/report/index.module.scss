@@ -325,6 +325,18 @@
   margin-bottom: $spacing-sm;
 }
 
+.historyHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.historyExpand {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  padding: $spacing-xs;
+}
+
 .historyType {
   font-size: $font-size-md;
   font-weight: $font-weight-semibold;
@@ -388,4 +400,126 @@
   text-align: center;
   padding: $spacing-xl;
   color: $color-text-tertiary;
+}
+
+.detailSection {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-border;
+}
+
+.statusSteps {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-md;
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+}
+
+.stepItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.stepDot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: $radius-round;
+  background-color: $color-border;
+  margin-bottom: $spacing-xs;
+  z-index: 1;
+
+  &.stepDotActive {
+    background-color: $color-primary;
+  }
+}
+
+.stepLine {
+  position: absolute;
+  top: 12rpx;
+  left: 50%;
+  width: 100%;
+  height: 4rpx;
+  background-color: $color-border;
+  z-index: 0;
+
+  &.stepLineActive {
+    background-color: $color-primary;
+  }
+}
+
+.stepContent {
+  text-align: center;
+}
+
+.stepLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  &.stepLabelActive {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.stepTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 2rpx;
+}
+
+.detailRow {
+  display: flex;
+  padding: $spacing-sm 0;
+  border-bottom: 2rpx solid $color-bg-page;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.detailLabel {
+  width: 160rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.detailValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.5;
+}
+
+.detailPhotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.detailPhoto {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-sm;
+}
+
+.simulateBtn {
+  @include button-reset;
+  margin-top: $spacing-md;
+  width: 100%;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background-color: $color-bg-info;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.8;
+  }
 }
